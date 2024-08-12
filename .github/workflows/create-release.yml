@@ -1,0 +1,47 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - "v*.*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v4
+
+      - name: Set up node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # - name: Get current tag
+      #   id: get-tag
+      #   uses: dawidd6/action-get-tag@v1
+      #   with:
+      #     strip_v: true
+
+      - name: Update package version
+        uses: BellCubeDev/update-package-version-by-release-tag@v2
+
+      - name: Commit updated package
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          # stage any file changes to be committed
+          git add .
+          # make commit with staged changes
+          git commit -m 'NPM package version updated'
+          # push the commit back up to source GitHub repository
+          git push
+
+      - name: Move git tag to latest commit
+
+      - name: Create Github release (or pre-release)
