@@ -8,6 +8,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the
+      # added or changed files to the repository.
+      contents: write
 
     steps:
       - name: Check out source code
@@ -34,15 +38,22 @@ jobs:
           version: ${{steps.get-tag.outputs.tag}}
 
       - name: Commit updated package
-        run: |
-          git config --global user.name "${{ github.actor }}"
-          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-          # stage any file changes to be committed
-          git add .
-          # make commit with staged changes
-          git commit -m 'NPM package version updated'
-          # push the commit back up to source GitHub repository
-          git push origin main
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: NPM package version updated
+          branch: main
+          commit_user_name: ${{ github.actor }}
+          commit_user_email: ${{ github.actor }}@users.noreply.github.com
+
+        # run: |
+        #   git config --global user.name "${{ github.actor }}"
+        #   git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+        #   # stage any file changes to be committed
+        #   git add .
+        #   # make commit with staged changes
+        #   git commit -m 'NPM package version updated'
+        #   # push the commit back up to source GitHub repository
+        #   git push origin main
 
       # - name: Move git tag to latest commit
 
