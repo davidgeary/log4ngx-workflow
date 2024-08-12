@@ -22,14 +22,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # - name: Get current tag
-      #   id: get-tag
-      #   uses: dawidd6/action-get-tag@v1
-      #   with:
-      #     strip_v: true
+      - name: Get current tag
+        id: get-tag
+        uses: dawidd6/action-get-tag@v1
+        with:
+          strip_v: true
 
       - name: Update package version
         uses: BellCubeDev/update-package-version-by-release-tag@v2
+        with:
+          version: ${{steps.get-tag.outputs.tag}}
 
       - name: Commit updated package
         run: |
