@@ -1,6 +1,6 @@
 {
   "name": "log4ngx",
-  "version": "0.0.9-rc",
+  "version": "0.0.10-rc0",
   "description": "A Typescript logging framework for Angular projects",
   "author": "David Geary <david@secondbounce.com>",
   "license": "MIT",
