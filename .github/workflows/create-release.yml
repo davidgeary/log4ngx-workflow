@@ -60,8 +60,8 @@ jobs:
 
       - name: Update git tag on latest commit
         run: |
-          git tag -d ${{steps.get-tag.outputs.tag}}
-          git tag ${{steps.get-version.outputs.version}}
+          git tag -d v${{steps.get-tag.outputs.tag}}
+          git tag v${{steps.get-version.outputs.version}}
           git push origin --tags
 
       # - name: Create Github release (or pre-release)
