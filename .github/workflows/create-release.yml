@@ -33,6 +33,7 @@ jobs:
           strip_v: false
 
       - name: Set the new version
+        # Remove the leading 'v' and the trailing '-rc##'
         id: get-version
         run: |
           rctag=${{ steps.get-tag.outputs.tag }}
@@ -59,10 +60,18 @@ jobs:
           commit_user_email: ${{ github.actor }}@users.noreply.github.com
 
       - name: Update git tag on latest commit
+        # The deletes the original '-rc' tag on the remote (origin) repo but
+        # obviously doesn't remove it from any local repos that created/pulled
+        # the tag beforehand.  That shouldn't be an issue though, as we're only
+        # tidying it up because it's redundant.
         run: |
           git tag -d ${{ steps.get-tag.outputs.tag }}
           git push origin :refs/tags/${{ steps.get-tag.outputs.tag }}
           git tag ${{ steps.get-version.outputs.version }}
           git push origin --tags
 
-      # - name: Create Github release (or pre-release)
+      - name: Create Github release
+        uses: softprops/action-gh-release@v2
+        with:
+          prerelease: false
+          draft: true
