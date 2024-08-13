@@ -3,7 +3,7 @@ name: Create Release
 on:
   push:
     tags:
-      - "v*.*"
+      - "v*.*.*-rc*"
 
 jobs:
   build:
@@ -32,10 +32,20 @@ jobs:
         with:
           strip_v: true
 
+      - name: Set the new version
+        id: get-version
+        run: |
+          rctag=${{steps.get-tag.outputs.tag}}
+          re='(v[0-9]+\.[0-9]+\.[0-9]+)-rc.?'
+          if [[ $rctag =~ $re ]]; then
+            rctag=${BASH_REMATCH[1]}
+          fi
+          echo "version=$rctag" >> "$GITHUB_OUTPUT"
+
       - name: Update package version
         uses: BellCubeDev/update-package-version-by-release-tag@v2
         with:
-          version: ${{steps.get-tag.outputs.tag}}
+          version: ${{steps.get-version.outputs.version}}
 
       - name: Commit updated package
         uses: stefanzweifel/git-auto-commit-action@v5
@@ -45,16 +55,10 @@ jobs:
           commit_user_name: ${{ github.actor }}
           commit_user_email: ${{ github.actor }}@users.noreply.github.com
 
-        # run: |
-        #   git config --global user.name "${{ github.actor }}"
-        #   git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-        #   # stage any file changes to be committed
-        #   git add .
-        #   # make commit with staged changes
-        #   git commit -m 'NPM package version updated'
-        #   # push the commit back up to source GitHub repository
-        #   git push origin main
-
-      # - name: Move git tag to latest commit
+      - name: Move git tag to latest commit
+        run: |
+          git tag -d ${{steps.get-tag.outputs.tag}}
+          git tag ${{steps.get-version.outputs.version}}
+          git push origin --tags
 
       # - name: Create Github release (or pre-release)
