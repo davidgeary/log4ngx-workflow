@@ -35,8 +35,8 @@ jobs:
       - name: Set the new version
         id: get-version
         run: |
-          rctag=${{steps.get-tag.outputs.tag}}
-          re='(v[0-9]+\.[0-9]+\.[0-9]+)-rc.?'
+          rctag=${{ steps.get-tag.outputs.tag }}
+          re='([0-9]+\.[0-9]+\.[0-9]+)-rc.*'
           if [[ $rctag =~ $re ]]; then
             echo "::debug::Tag matches regex pattern"
             rctag=${BASH_REMATCH[1]}
@@ -45,23 +45,23 @@ jobs:
           fi
           echo "version=$rctag" >> "$GITHUB_OUTPUT"
 
-      - name: Update package version to ${{steps.get-version.outputs.version}}
+      - name: Update package version to ${{ steps.get-version.outputs.version }}
         uses: BellCubeDev/update-package-version-by-release-tag@v2
         with:
-          version: ${{steps.get-version.outputs.version}}
+          version: ${{ steps.get-version.outputs.version }}
 
       - name: Commit updated package
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: NPM package version updated to ${{steps.get-version.outputs.version}}
+          commit_message: NPM package version updated to ${{ steps.get-version.outputs.version }}
           branch: main
           commit_user_name: ${{ github.actor }}
           commit_user_email: ${{ github.actor }}@users.noreply.github.com
 
       - name: Update git tag on latest commit
         run: |
-          git tag -d v${{steps.get-tag.outputs.tag}}
-          git tag v${{steps.get-version.outputs.version}}
+          git tag -d v${{ steps.get-tag.outputs.tag }}
+          git tag v${{ steps.get-version.outputs.version }}
           git push origin --tags
 
       # - name: Create Github release (or pre-release)
