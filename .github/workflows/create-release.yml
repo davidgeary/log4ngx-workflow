@@ -91,9 +91,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Create draft Github release
+      - name: Create draft Github release for ${{ steps.get-version.outputs.version }}
         uses: softprops/action-gh-release@v2
         with:
+          name: ${{ steps.get-version.outputs.version }}
           tag_name: ${{ steps.get-version.outputs.version }}
           prerelease: false
           draft: true
