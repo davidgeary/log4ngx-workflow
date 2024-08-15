@@ -3,7 +3,7 @@ name: Create Release
 on:
   push:
     tags:
-      - "v*.*.*-rc*"
+      - "v*.*.*"
 
 jobs:
   update-version:
@@ -30,71 +30,75 @@ jobs:
         id: get-tag
         uses: devops-actions/action-get-tag@v1.0.3
         with:
-          strip_v: false
+          strip_v: true
 
-      - name: Set the new version
-        # Remove the leading 'v' and the trailing '-rc##'
-        id: get-version
-        run: |
-          rctag=${{ steps.get-tag.outputs.tag }}
-          re='v([0-9]+\.[0-9]+\.[0-9]+)-rc.*'
-          if [[ $rctag =~ $re ]]; then
-            echo "::debug::Tag matches regex pattern"
-            rctag=${BASH_REMATCH[1]}
-          else
-            echo "::debug::Tag DOES NOT match regex pattern"
-          fi
-          echo "version=$rctag" >> "$GITHUB_OUTPUT"
+      # - name: Set the new version
+      #   # Remove the leading 'v' and the trailing '-rc##'
+      #   id: get-version
+      #   run: |
+      #     rctag=${{ steps.get-tag.outputs.tag }}
+      #     re='v([0-9]+\.[0-9]+\.[0-9]+)-rc.*'
+      #     if [[ $rctag =~ $re ]]; then
+      #       echo "::debug::Tag matches regex pattern"
+      #       rctag=${BASH_REMATCH[1]}
+      #     else
+      #       echo "::debug::Tag DOES NOT match regex pattern"
+      #     fi
+      #     echo "version=$rctag" >> "$GITHUB_OUTPUT"
 
-      - name: Update package version to ${{ steps.get-version.outputs.version }}
+      # - name: Update package version to ${{ steps.get-version.outputs.version }}
+      #   uses: BellCubeDev/update-package-version-by-release-tag@v2
+      #   with:
+      #     version: ${{ steps.get-version.outputs.version }}
+      - name: Update package version to ${{ steps.get-tag.outputs.tag }}
         uses: BellCubeDev/update-package-version-by-release-tag@v2
         with:
-          version: ${{ steps.get-version.outputs.version }}
+          version: ${{ steps.get-tag.outputs.tag }}
 
+      # - name: Commit updated package
+      #   uses: stefanzweifel/git-auto-commit-action@v5
+      #   with:
+      #     commit_message: NPM package version updated to ${{ steps.get-version.outputs.version }}
+      #     branch: main
+      #     commit_user_name: ${{ github.actor }}
+      #     commit_user_email: ${{ github.actor }}@users.noreply.github.com
       - name: Commit updated package
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: NPM package version updated to ${{ steps.get-version.outputs.version }}
+          commit_message: NPM package version updated to ${{ steps.get-tag.outputs.tag }}
           branch: main
           commit_user_name: ${{ github.actor }}
           commit_user_email: ${{ github.actor }}@users.noreply.github.com
 
-      - name: Update git tag on latest commit
-        # The deletes the original '-rc' tag on the remote (origin) repo but
-        # obviously doesn't remove it from any local repos that created/pulled
-        # the tag beforehand.  That shouldn't be an issue though, as we're only
-        # tidying it up because it's redundant.
-        run: |
-          git tag -d ${{ steps.get-tag.outputs.tag }}
-          git push origin :refs/tags/${{ steps.get-tag.outputs.tag }}
-          git tag ${{ steps.get-version.outputs.version }}
-          git push origin --tags
+      # - name: Update git tag on latest commit
+      #   # The deletes the original '-rc' tag on the remote (origin) repo but
+      #   # obviously doesn't remove it from any local repos that created/pulled
+      #   # the tag beforehand.  That shouldn't be an issue though, as we're only
+      #   # tidying it up because it's redundant.
+      #   run: |
+      #     git tag -d ${{ steps.get-tag.outputs.tag }}
+      #     git push origin :refs/tags/${{ steps.get-tag.outputs.tag }}
+      #     git tag ${{ steps.get-version.outputs.version }}
+      #     git push origin --tags
 
-  # create-release:
-  #   needs: update-version
-  #   runs-on: ubuntu-latest
-  #   # permissions:
-  #   #   # Give the default GITHUB_TOKEN write permission to commit and push the
-  #   #   # added or changed files to the repository.
-  #   #   contents: write
+      # - name: Create draft Github release for ${{ steps.get-version.outputs.version }}
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #     name: ${{ steps.get-version.outputs.version }}
+      #     tag_name: ${{ steps.get-version.outputs.version }}
+      #     prerelease: false
+      #     draft: true
 
-  #   steps:
-  #     - name: Check out source code
-  #       uses: actions/checkout@v4
-
-  #     - name: Set up node
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: 20
-  #         cache: 'npm'
-
-  #     - name: Install dependencies
-  #       run: npm ci
-
-      - name: Create draft Github release for ${{ steps.get-version.outputs.version }}
+      - name: Create Github pre-release
+        if: (startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-')) || !startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          name: ${{ steps.get-version.outputs.version }}
-          tag_name: ${{ steps.get-version.outputs.version }}
+          prerelease: true
+          draft: true
+
+      - name: Create Github release
+        if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-')
+        uses: softprops/action-gh-release@v2
+        with:
           prerelease: false
           draft: true
