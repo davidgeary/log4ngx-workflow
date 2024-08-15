@@ -32,10 +32,16 @@ jobs:
         with:
           strip_v: true
 
-      - name: Update package version to ${{ steps.get-tag.outputs.tag }}
+      - name: Update project package version to ${{ steps.get-tag.outputs.tag }}
         uses: BellCubeDev/update-package-version-by-release-tag@v2
         with:
           version: ${{ steps.get-tag.outputs.tag }}
+
+      - name: Update library package version to ${{ steps.get-tag.outputs.tag }}
+        uses: BellCubeDev/update-package-version-by-release-tag@v2
+        with:
+          version: ${{ steps.get-tag.outputs.tag }}
+          package-json-path: './projects/log4ngx/package.json'
 
       - name: Commit updated package
         uses: stefanzweifel/git-auto-commit-action@v5
