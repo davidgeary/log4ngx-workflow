@@ -3,7 +3,7 @@ name: Create Release
 on:
   push:
     tags:
-      - "build#*.*.*"
+      - 'build#*.*.*'
 
 env:
   PREFIX_REGEX: 'build#(.*)'
@@ -83,7 +83,7 @@ jobs:
       - name: Create draft Github pre-release for ${{ steps.get-version.outputs.version }} (${{ env.IS_PRERELEASE }})
 # TODO: replace with ${{ env.IS_PRERELEASE }}
         # if: (startsWith(github.ref, 'refs/tags/build#') && contains(github.ref, '-')) || !startsWith(github.ref, 'refs/tags/build#')
-        if: env.IS_PRERELEASE
+        if: ${{ env.IS_PRERELEASE }}
         uses: softprops/action-gh-release@v2
         with:
           name: ${{ steps.get-version.outputs.version }}
@@ -94,7 +94,7 @@ jobs:
       - name: Create draft Github release for ${{ steps.get-version.outputs.version }} (!${{ env.IS_PRERELEASE }})
 # TODO: replace with !${{ env.IS_PRERELEASE }}
         # if: startsWith(github.ref, 'refs/tags/build#') && !contains(github.ref, '-')
-        if: !env.IS_PRERELEASE
+        if: ${{ !env.IS_PRERELEASE }}
         uses: softprops/action-gh-release@v2
         with:
           name: ${{ steps.get-version.outputs.version }}
