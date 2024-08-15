@@ -41,7 +41,7 @@ jobs:
         id: get-version
         run: |
           rctag=${{ steps.get-tag.outputs.tag }}
-          re=${{ env.PREFIX_REGEX }}
+          re='${{ env.PREFIX_REGEX }}'
           if [[ $rctag =~ $re ]]; then
             echo "::debug::Tag matches regex pattern"
             rctag=${BASH_REMATCH[1]}
