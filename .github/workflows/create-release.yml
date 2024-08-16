@@ -85,8 +85,9 @@ jobs:
         run: |
           git tag -d ${{ steps.get-tag.outputs.tag }}
           git push origin :refs/tags/${{ steps.get-tag.outputs.tag }}
-          git tag v${{ steps.get-version.outputs.version }}
-          git push origin --tags
+
+        # git tag ${{ steps.get-version.outputs.version }}
+        # git push origin --tags
 
       - name: Create draft Github pre-release for ${{ steps.get-version.outputs.version }} (${{ env.IS_PRERELEASE }})
         if: env.IS_PRERELEASE == 'true'
